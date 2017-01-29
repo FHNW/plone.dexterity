@@ -14,6 +14,7 @@ from plone.dexterity.interfaces import IDexterityContainer
 from plone.dexterity.interfaces import IDexterityContent
 from plone.dexterity.interfaces import IDexterityFTI
 from plone.dexterity.schema import SCHEMA_CACHE
+from plone.dexterity.utils import initialize_missing_attributes
 from plone.folder.default import DefaultOrdering
 from pytz import timezone
 from zope.annotation.attribute import AttributeAnnotations
@@ -277,7 +278,8 @@ class TestContent(MockTestCase):
         self.assertTrue(IMarker2.providedBy(item))
 
         # Subtypes provide field defaults.
-        self.assertEqual(u"baz", getattr(item, "baz", None))
+        self.assertNotEqual(u"baz", getattr(item, "baz", None))
+        # XXX: item cannot adapt to IBehavior2 so it shouldn't provide its fields?
 
         # We also need to ensure that the _v_ attribute doesn't hide any
         # interface set directly on the instance with alsoProvides() or
@@ -435,6 +437,7 @@ class TestContent(MockTestCase):
 
         SCHEMA_CACHE.invalidate('testtype')
 
+        initialize_missing_attributes(content)  # WIP
         self.assertEqual(u"foo_default", content.foo)
         self.assertEqual(None, content.bar)
         self.assertEqual(u"id", content.id)
@@ -457,6 +460,7 @@ class TestContent(MockTestCase):
 
         SCHEMA_CACHE.invalidate('testtype')
 
+        initialize_missing_attributes(content)  # WIP
         self.assertEqual(u"foo_default", content.foo)
         self.assertEqual(None, content.bar)
         self.assertEqual(u"id", content.id)
@@ -487,6 +491,7 @@ class TestContent(MockTestCase):
 
         SCHEMA_CACHE.invalidate('testtype')
 
+        initialize_missing_attributes(content)  # WIP
         self.assertEqual(u"id_testtype", content.foo)
         self.assertEqual(None, content.bar)
         self.assertEqual(u"id", content.id)
@@ -513,6 +518,7 @@ class TestContent(MockTestCase):
         SCHEMA_CACHE.invalidate('testtype')
 
         # Schema field masks contained item
+        initialize_missing_attributes(content)  # WIP
         self.assertEqual(u"foo_default", content.foo)
 
         # But we can still obtain an item
@@ -980,6 +986,9 @@ class TestContent(MockTestCase):
 
         # Ensure that the field of foo is not the same field, also attached to
         # bar.
+        initialize_missing_attributes(foo)  # WIP
+        initialize_missing_attributes(bar)  # WIP
+        initialize_missing_attributes(baz)  # WIP
         self.assertTrue(foo.listfield is not bar.listfield)
         self.assertTrue(foo.listfield is not baz.listfield)
         # And just to reinforce why this is awful, we'll ensure that updating
